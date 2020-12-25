@@ -1,0 +1,86 @@
+package co.algs.in.dynamic.programmings;
+
+import java.util.HashMap;
+
+/**
+ * Zero/One Knapsack program
+ * with unimited supplies
+ *
+ */
+public class ZeroAndOneWeightUnlimitedSupply {
+	
+	static int recursiveCount = 0,
+			recursiveCountDP = 0;
+	
+	public static void main(String[] args) {
+        int val[] = new int[] {1, 2, 3, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 18, 19, 29, 30, 32, 34}; 
+        int wt[] = new int[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20}; 
+        int capcity = 150; 
+        
+        System.out.println(calculateByDynamicProgrm(val, wt, capcity)); 
+        System.out.println("recursiveCallCount with dynamic program" + recursiveCountDP);
+	}
+	private static class ProfitWeightWrapper {
+		int capacity;
+		int position;
+		
+		public ProfitWeightWrapper(int capacity, int position) {
+			this.capacity = capacity;
+			this.position = position;
+		}
+
+		@Override
+		public int hashCode() {
+			return position + capacity;
+		}
+		
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			ProfitWeightWrapper other = (ProfitWeightWrapper) obj;//change Object into ProfitWeightWrapper
+			if (capacity != other.capacity)
+				return false;
+			if (position != other.position)
+				return false;
+			return true;
+		}
+				
+	}
+	
+	public static int calculateByDynamicProgrm(int[ ] profit, int[ ] weight, int capacity) {
+		HashMap<ProfitWeightWrapper, Integer> cache = new HashMap<>();
+		return calculateByDynamicProgrm(profit, weight, capacity, 0, cache);
+	}
+	
+	private static int calculateByDynamicProgrm(int[ ] profit, int[ ] weight, int capacity, int position,
+			HashMap<ProfitWeightWrapper, Integer> cache) {
+		
+		recursiveCountDP++;
+		
+		if (capacity <= 0 || weight.length == position) {
+			return 0;
+		}
+		
+		int includingProfit = 0;
+		if (weight[position] <= capacity) {
+			//including first item
+			ProfitWeightWrapper key = new ProfitWeightWrapper(capacity - weight[position], position);
+			includingProfit = cache.containsKey(key) ? 
+						profit[position] + cache.get(key) :
+							profit[position] + calculateByDynamicProgrm(profit, weight, capacity - weight[position], position, cache);
+		}
+		
+		//excluding first item
+		ProfitWeightWrapper key = new ProfitWeightWrapper(capacity, position + 1);
+		int excludedProfit = cache.containsKey(key) ? cache.get(key) : calculateByDynamicProgrm(profit, weight, capacity, position + 1, cache);
+		
+		int maxProfit = Math.max(includingProfit, excludedProfit);
+		cache.put(new ProfitWeightWrapper(capacity, position), maxProfit);
+		return maxProfit;
+	}
+}
