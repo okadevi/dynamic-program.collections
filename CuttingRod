@@ -1,0 +1,82 @@
+
+import java.util.HashMap;
+
+/**
+ * Rod Cutting problem: Given a rod of length n and
+ * list of prices of rod of length i where 1 <= i <= n, find the optimal way to 
+ * cut rod into smaller rods in order to maximum profits
+ */
+public class CuttingRod {
+	
+	public static void main(String[] args) {
+		int rodSection[] = new int[]{1,2,3,4,5,6,7,8};
+		int rodPrice[] = new int[]{1,5,8,9,10,17,17,20};
+		System.out.println(process(rodSection, rodPrice, 4, 0));
+	}
+	
+	public static int process (int[] rodSection, int[] rodPrice, int rodLength,int position) {
+		HashMap<MemoWrapper, Integer> cache = new HashMap<>();
+		return calculate(rodSection, rodPrice, rodLength, position, cache);
+	}
+	
+	private static int calculate(int[] rodSection, int[] rodPrice, int rodLength,int position, HashMap<MemoWrapper, Integer> cache) {
+		//0 is return when end of rod is reached/ rodsection 's length is greater than remaining rod length
+		if (rodSection.length == position || rodLength == 0) {
+			return 0;
+		}
+
+		MemoWrapper key = new MemoWrapper(position, rodLength - rodSection[position]);
+
+		//including rodSection[position] 
+		int includedRodProfit = 0;
+		if (rodSection[position] <= rodLength) {
+			includedRodProfit = cache.containsKey(key) ? rodPrice[position] + cache.get(key) :
+				rodPrice[position] + calculate(rodSection, rodPrice, rodLength - rodSection[position], position, cache);			
+		}
+
+		//excluding rodSection[position]
+		key = new MemoWrapper(position + 1, rodLength);
+		int excludedRodProfit =  cache.containsKey(key) ? cache.get(key) :
+			calculate(rodSection, rodPrice, rodLength, position + 1, cache);
+
+		int resultProfit = Math.max(includedRodProfit, excludedRodProfit);
+		cache.put(new MemoWrapper(position, rodLength), resultProfit);
+
+		return resultProfit;
+	}
+
+	private static class MemoWrapper {
+		int rodSection;
+		int remainingRodToBeCut;
+
+		public MemoWrapper(int rodSection, int remainingRodToBeCut) {
+			this.rodSection = rodSection;
+			this.remainingRodToBeCut = remainingRodToBeCut;
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + remainingRodToBeCut;
+			result = prime * result + rodSection;
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			MemoWrapper other = (MemoWrapper) obj;
+			if (remainingRodToBeCut != other.remainingRodToBeCut)
+				return false;
+			if (rodSection != other.rodSection)
+				return false;
+			return true;
+		}		
+	}
+}
