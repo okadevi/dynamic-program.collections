@@ -1,0 +1,94 @@
+import java.util.HashMap;
+
+public class CoinChangeMinNumber {
+	
+	public static void main(String[] args) {
+		int arr[] = {5, 2, 4}; 
+        System.out.println( "Total ways with DP = "+fetchMinimumNoOfCoinsCombination(arr, 3) ); 
+
+	}
+	public static int fetchMinimumNoOfCoinsCombination(int[] coins, int targetValue) {
+		HashMap<Wrapper, Integer> cache = new HashMap<>();		
+		return calculateFrequency(coins, targetValue, 0, cache);
+	}
+	
+	/**
+	 * 
+	 * @param coins
+	 * @param targetValue
+	 * @param position
+	 * @param counter
+	 * @param cache
+	 * @return  minimum number of coins to make targetValue. -1 if no combination possible
+	 */
+	private static int calculateFrequency(int[] coins, int targetValue, int position, HashMap<Wrapper, Integer> cache) {
+		if (position == coins.length) {
+			return -1; 
+		}
+
+		if (targetValue == coins[position]) {
+			return 1;
+		}
+		
+		//including item
+		int minCoinCountIncludingItem = -1;				
+		Wrapper key = new Wrapper(position, targetValue);
+		if (coins[position] < targetValue) {
+			int min = calculateFrequency(coins, (targetValue - coins[position]), position, cache);
+			minCoinCountIncludingItem = cache.containsKey(key) ? cache.get(key) : 
+				(min == -1) ? -1 : (min + 1);			
+		}
+		
+		//excluding item
+		int minCoinCountExcludingItem = -1;
+		key = new Wrapper( (position + 1), targetValue);
+		minCoinCountExcludingItem = cache.containsKey(key) ? cache.get(key) :  
+			calculateFrequency(coins, targetValue, (position + 1), cache);
+		
+		
+		if (minCoinCountExcludingItem == -1) {
+			return minCoinCountIncludingItem;
+		} else if (minCoinCountIncludingItem == -1) {
+			return minCoinCountExcludingItem;
+		} else {
+			int result = Math.min(minCoinCountIncludingItem, minCoinCountExcludingItem);
+			cache.put(new Wrapper(position, targetValue), result);
+			return result;
+		}		
+	}
+	
+	private static class Wrapper {
+		int position;
+		int targetValue;
+		
+		public Wrapper(int position, int targetValue) {
+			this.position = position;
+			this.targetValue = targetValue;
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + position;
+			result = prime * result + targetValue;
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			Wrapper other = (Wrapper) obj;
+			if (position != other.position)
+				return false;
+			if (targetValue != other.targetValue)
+				return false;
+			return true;
+		}	
+	}
+}
