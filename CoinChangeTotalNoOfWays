@@ -1,0 +1,101 @@
+import java.util.HashMap;
+
+public class CoinChangeTotalNoOfWays {
+	static int callCountWithoutDP = 0;
+	static int callCountWithDP = 0;
+	
+	public static void main(String[] args) {
+        int arr[] = {1, 2, 3}; 
+        System.out.println( "Total ways without DP ="+calculateNoOfWays(arr, 3, 0) +" , number of recursice calls executed = "+callCountWithoutDP); 
+        System.out.println( "Total ways with DP ="+calculateNoOfWaysUsingDP(arr, 3, 0) +" , number of recursice calls executed = "+callCountWithDP); 
+
+	}
+	
+	public static int calculateNoOfWays(int[] coinArr, int targetSum, int position) {
+		callCountWithoutDP++; 
+		
+		if (position == coinArr.length) {
+			return 0;
+		}
+				
+		// including current item
+		int noOfWaysIncludingItem = 0;	
+		if (coinArr[position] == targetSum) {
+			noOfWaysIncludingItem = 1;
+		} else if (coinArr[position] < targetSum) {
+			noOfWaysIncludingItem = calculateNoOfWays(coinArr, (targetSum - coinArr[position]), position) ;
+		}
+						
+		//not including current item
+		int noOfWaysNotIncludingItem = calculateNoOfWays(coinArr, targetSum, (position+1) );
+		return noOfWaysIncludingItem + noOfWaysNotIncludingItem ;
+	}
+	
+	public static int calculateNoOfWaysUsingDP(int[] coinArr, int targetSum, int position) {
+		HashMap<WrapperItems, Integer> cache = new HashMap<>();
+		return calWaysWithDP(coinArr, targetSum, position, cache);
+	}
+	
+	private static int calWaysWithDP(int[] coinArr, int targetSum, int position, HashMap<WrapperItems, Integer> cache) {
+		callCountWithDP++;
+		if (position == coinArr.length)
+			return 0;
+		
+		if (coinArr[position] == targetSum) {
+			return 1;
+		}
+		
+		//including item
+		int itemIncludingNoOfWays = 0,
+				itemExcludingNoOfWays = 0;
+		WrapperItems key = new WrapperItems(targetSum, position);		
+		if ( coinArr[position] < targetSum) {
+			itemIncludingNoOfWays = cache.containsKey(key) ? 
+					cache.get(key) : calWaysWithDP(coinArr, (targetSum - coinArr[position]), position, cache);
+		}
+		
+		//excluding item
+		key = new WrapperItems(targetSum, (position + 1));
+		itemExcludingNoOfWays = cache.containsKey(key) ?
+				cache.get(key) : calWaysWithDP(coinArr, targetSum, (position + 1), cache);	
+		cache.put(new WrapperItems(targetSum, position), targetSum);
+		
+		return itemExcludingNoOfWays + itemIncludingNoOfWays;
+	}
+	
+	private static class WrapperItems {
+		int targetSum;
+		int position;
+		
+		public WrapperItems(int targetSum, int position) {
+			this.targetSum = targetSum;
+			this.position = position;
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + position;
+			result = prime * result + targetSum;
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			WrapperItems other = (WrapperItems) obj;
+			if (position != other.position)
+				return false;
+			if (targetSum != other.targetSum)
+				return false;
+			return true;
+		}
+	
+	}
+}
